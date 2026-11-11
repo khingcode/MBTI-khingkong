@@ -132,6 +132,12 @@ h2 { font-family: var(--f-display); font-weight: 800; font-stretch: 80%; font-si
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr)); gap: 12px; }
 .fcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .fcard header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.who-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; border: 2px solid var(--accent); background: var(--surface-2); }
+.photo-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.photo-row .avatar { width: 72px; height: 72px; }
+.photo-row .ph { width: 72px; height: 72px; border-radius: 50%; border: 1.5px dashed var(--line); display: grid; place-items: center; color: var(--fg-dim); font-size: 11px; font-family: var(--f-mono); text-align: center; flex: none; }
+.photo-row input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .typecode { background: none; border: 0; padding: 0; font-family: var(--f-display); font-weight: 800; font-stretch: 78%; font-size: 40px; line-height: 1; letter-spacing: -.02em; color: var(--accent-text); }
 .typecode:hover { text-decoration: underline; text-underline-offset: 5px; }
 .conf { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; border: 1px solid var(--fg-dim); border-radius: 999px; padding: 3px 9px; color: var(--fg-dim); white-space: nowrap; }
@@ -205,6 +211,7 @@ footer.site { color: var(--fg-dim); font-size: 13px; border-top: 1px solid var(-
 /* overlay */
 .overlay { position: fixed; inset: 0; z-index: 60; background: var(--scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .overlay[hidden] { display: none; }
+[hidden] { display: none !important; }
 .panel { background: var(--bg); border: 1px solid var(--line); border-radius: 24px; width: 100%; max-width: 620px; max-height: 100%; overflow-y: auto; padding: clamp(20px, 4vw, 32px); display: flex; flex-direction: column; gap: 20px; position: relative; }
 .panel .close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 18px; line-height: 1; display: grid; place-items: center; }
 .panel h2 { font-size: clamp(2rem, 6vw, 3rem); max-width: none; }
@@ -421,7 +428,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     }
     list.forEach(function (f) {
       var t = TBY[f.type], conf = CONF[f.conf] ? f.conf : 'likely';
-      h += '<article class="fcard"><header><button class="typecode" data-action="type" data-type="' + f.type + '" aria-label="Open ' + f.type + ' details">' + f.type + '</button><span class="conf ' + conf + '">' + CONF[conf] + '</span></header>' +
+      h += '<article class="fcard"><header><div class="who-head">' + (f.photo ? '<img class="avatar" src="' + esc(f.photo) + '" alt="Photo of ' + esc(f.name) + '">' : '') + '<button class="typecode" data-action="type" data-type="' + f.type + '" aria-label="Open ' + f.type + ' details">' + f.type + '</button></div><span class="conf ' + conf + '">' + CONF[conf] + '</span></header>' +
         '<div><h3>' + esc(f.name) + '</h3><p class="nick">' + esc(t.n) + (f.how ? ' · ' + esc(f.how) : '') + '</p></div>' + stackHtml(f.type) +
         (f.note ? '<p class="note">' + esc(f.note) + '</p>' : '') +
         (state.canWrite ? '<footer>' + (state.confirmId === f.id ?
@@ -510,12 +517,14 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
 
   function openForm(friend, presetType) {
     var f = friend || { name: '', type: presetType || '', conf: 'likely', how: '', note: '' };
+    formPhoto = f.photo || '';
     var opts = '<option value="">Choose a type</option>' + GROUPS.map(function (g) {
       return '<optgroup label="' + g.name + '">' + TYPES.filter(function (t) { return t.g === g.g; }).map(function (t) { return '<option value="' + t.c + '"' + (f.type === t.c ? ' selected' : '') + '>' + t.c + ' ' + t.n + '</option>'; }).join('') + '</optgroup>';
     }).join('');
     var confOpts = Object.keys(CONF).map(function (k) { return '<option value="' + k + '"' + (f.conf === k ? ' selected' : '') + '>' + CONF[k] + '</option>'; }).join('');
     var h = '<div class="eyebrow">' + (friend ? 'Edit entry' : 'New entry') + '</div><h2>' + (friend ? esc(f.name) : 'Add a friend') + '</h2>' +
       '<form class="fform" id="fform" data-id="' + esc(friend ? friend.id : '') + '" novalidate>' +
+      '<div class="photo-row" id="f-photo"></div>' +
       '<label for="f-name">Name<input class="field" id="f-name" maxlength="60" value="' + esc(f.name) + '" autocomplete="off"></label>' +
       '<div class="two"><label for="f-type">Type<select class="field" id="f-type">' + opts + '</select></label>' +
       '<label for="f-conf">How sure am I<select class="field" id="f-conf">' + confOpts + '</select></label></div>' +
@@ -525,7 +534,27 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
       '<div class="err" id="f-err" role="alert"></div>' +
       '<div class="acts"><button type="button" class="btn" data-action="close">Cancel</button><button type="submit" class="btn btn-primary">Save friend</button></div></form>';
     openOverlay(h, '#f-name');
-    updatePreview();
+    updatePreview(); renderPhoto();
+  }
+  var formPhoto = '';
+  function renderPhoto() {
+    var el = $('f-photo'); if (!el) return;
+    el.innerHTML = (formPhoto ? '<img class="avatar" src="' + esc(formPhoto) + '" alt="Photo preview">' : '<div class="ph">no photo</div>') +
+      '<label class="btn btn-sm" for="f-file" style="cursor:pointer">' + (formPhoto ? 'Change photo' : 'Add photo') + '</label><input type="file" id="f-file" accept="image/*">' +
+      (formPhoto ? '<button type="button" class="btn btn-sm" data-action="rmphoto">Remove photo</button>' : '');
+  }
+  function resizePhoto(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+        var m = Math.min(img.width, img.height), sx = (img.width - m) / 2, sy = (img.height - m) / 2;
+        c.getContext('2d').drawImage(img, sx, sy, m, m, 0, 0, S, S);
+        URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(); };
+      img.src = url;
+    });
   }
   function updatePreview() {
     var sel = $('f-type'), p = $('f-prev'); if (!sel || !p) return;
@@ -552,7 +581,9 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
   }
 
   function useLocal() {
-    state.mode = 'local'; state.canWrite = true;
+    state.mode = 'local';
+    // Outside the claude.ai page there is no sign-in, so editing unlocks only on the owner's own browser: open the site once with #owner in the URL.
+    try { if (/[#?&]owner\b/.test(location.hash + location.search)) localStorage.setItem('cogfile.owner', '1'); state.canWrite = localStorage.getItem('cogfile.owner') === '1'; } catch (e) { state.canWrite = false; }
     try { state.friends = JSON.parse(localStorage.getItem(LS_KEY) || '[]') || []; } catch (e) { state.friends = []; }
     render();
   }
@@ -594,11 +625,18 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     else if (a === 'delno') { state.confirmId = null; renderCards(); }
     else if (a === 'delyes') { state.confirmId = null; remove(id).catch(function () { state.warn = true; statusText(); }); renderCards(); }
     else if (a === 'type') openType(el.dataset.type);
+    else if (a === 'rmphoto') { formPhoto = ''; renderPhoto(); }
     else if (a === 'close') closeOverlay();
     else if (a === 'filter') { state.lead = el.dataset.fn; renderChips(); renderCards(); }
   });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('overlay').hidden) closeOverlay(); });
-  document.addEventListener('change', function (e) { if (e.target && e.target.id === 'f-type') updatePreview(); });
+  document.addEventListener('change', function (e) {
+    if (!e.target) return;
+    if (e.target.id === 'f-type') updatePreview();
+    if (e.target.id === 'f-file' && e.target.files && e.target.files[0]) {
+      resizePhoto(e.target.files[0]).then(function (d) { formPhoto = d; renderPhoto(); }).catch(function () { $('f-err').textContent = 'That file could not be read as an image.'; });
+    }
+  });
   $('q').addEventListener('input', function (e) { state.q = e.target.value; renderCards(); });
   document.addEventListener('submit', function (e) {
     var form = e.target; if (form.id !== 'fform') return;
@@ -606,7 +644,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     var name = $('f-name').value.trim(), type = $('f-type').value, err = $('f-err');
     if (!name) { err.textContent = 'Enter a name.'; $('f-name').focus(); return; }
     if (!type) { err.textContent = 'Choose a type so the stack can be filled in.'; $('f-type').focus(); return; }
-    var data = { name: name, type: type, conf: $('f-conf').value, how: $('f-how').value.trim(), note: $('f-note').value.trim() };
+    var data = { name: name, type: type, conf: $('f-conf').value, how: $('f-how').value.trim(), note: $('f-note').value.trim(), photo: formPhoto };
     err.textContent = '';
     save(form.dataset.id || null, data).then(closeOverlay).catch(function () { err.textContent = 'That did not save. Check your connection and try again.'; });
   });
