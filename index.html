@@ -279,7 +279,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
       <div class="chips" id="chips" role="group" aria-label="Filter by dominant function"></div>
     </div>
     <div class="status" id="status"></div>
-    <div style="margin:-8px 0 18px"><button class="btn btn-sm" id="exportBtn" data-action="export" hidden>Export roster (friends.json)</button></div>
+    <div style="margin:-8px 0 18px"><button class="btn btn-sm" id="tokenBtn" data-action="token" hidden>Connect GitHub</button> <button class="btn btn-sm" id="exportBtn" data-action="export" hidden>Export backup</button></div>
     <div class="cards" id="cards"></div>
   </section>
 
@@ -402,11 +402,13 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     var el = $('status'), t = '', cls = '';
     if (state.mode === 'pending') t = 'Connecting to saved data';
     else if (state.warn) { t = 'Saved data is slow to respond. Showing what loaded so far.'; cls = 'warn'; }
-    else if (state.mode === 'local') t = state.canWrite ? 'Owner mode: edits are drafts in this browser. Export the roster to publish them.' : 'Roster kept by the site owner.';
+    else if (state.pub) { t = state.pub; cls = state.pubOk ? 'ok' : 'warn'; }
+    else if (state.mode === 'local') t = state.canWrite ? (hasToken() ? 'Owner mode: changes publish to the live site automatically.' : 'Owner mode: connect GitHub so changes go live for everyone.') : 'Roster kept by the site owner.';
     else if (state.canWrite) { t = 'Synced to this page. Changes save automatically.'; cls = 'ok'; }
     else t = 'View only. Only the owner can edit the roster.';
     el.className = 'status ' + cls; el.textContent = t;
-    $('exportBtn').hidden = !(state.mode === 'local' && state.canWrite);
+    var own = state.mode === 'local' && state.canWrite;
+    $('exportBtn').hidden = !own; $('tokenBtn').hidden = !own; $('tokenBtn').textContent = hasToken() ? 'Change GitHub token' : 'Connect GitHub';
   }
   function renderChips() {
     var counts = {}; validFriends().forEach(function (f) { var d = TBY[f.type].s[0]; counts[d] = (counts[d] || 0) + 1; });
@@ -564,7 +566,30 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
   }
 
   /* ---------- data ---------- */
-  function persistLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state.friends)); } catch (e) {} }
+  var GH = { repo: 'khingcode/MBTI-khingkong', path: 'friends.json', branch: 'main', key: 'cogfile.ghtoken' };
+  function getToken() { try { return localStorage.getItem(GH.key) || ''; } catch (e) { return ''; } }
+  function hasToken() { return !!getToken(); }
+  var pubChain = Promise.resolve();
+  function setPub(msg, ok) { state.pub = msg; state.pubOk = !!ok; statusText(); }
+  function ghFetch(method, body) {
+    var url = 'https://api.github.com/repos/' + GH.repo + '/contents/' + GH.path + (method === 'GET' ? '?ref=' + GH.branch + '&t=' + Date.now() : '');
+    return fetch(url, { method: method, headers: { 'Authorization': 'Bearer ' + getToken(), 'Accept': 'application/vnd.github+json' }, body: body ? JSON.stringify(body) : undefined });
+  }
+  function publishRoster() {
+    if (!hasToken()) return;
+    var snapshot = JSON.stringify(state.friends, null, 2) + '\n';
+    setPub('Publishing to the live site…', false);
+    pubChain = pubChain.then(function () {
+      return ghFetch('GET').then(function (r) { if (r.status === 404) return {}; if (!r.ok) throw r.status; return r.json(); }).then(function (cur) {
+        var body = { message: 'Update roster', content: btoa(unescape(encodeURIComponent(snapshot))), branch: GH.branch };
+        if (cur && cur.sha) body.sha = cur.sha;
+        return ghFetch('PUT', body);
+      }).then(function (r) { if (!r.ok) throw r.status; setPub('Published. Everyone sees the update within about a minute.', true); });
+    }).catch(function (code) {
+      setPub(code === 401 || code === 403 ? 'GitHub rejected the token. Reconnect with a token that can write to the repo.' : 'Could not publish (' + code + '). Your change is saved in this browser; try again.', false);
+    });
+  }
+  function persistLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state.friends)); } catch (e) {} if (state.mode === 'local' && state.canWrite) publishRoster(); }
   function newId() { return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
   function save(id, data) {
@@ -593,7 +618,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
       render();
     };
     if (typeof fetch !== 'function') { done([]); return; }
-    fetch('friends.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : []; })
+    fetch('friends.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : []; })
       .then(function (d) { done(Array.isArray(d) ? d : []); }, function () { done([]); });
   }
 
@@ -637,6 +662,10 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     else if (a === 'export') {
       var blob = new Blob([JSON.stringify(state.friends, null, 2)], { type: 'application/json' }), u = URL.createObjectURL(blob), l = document.createElement('a');
       l.href = u; l.download = 'friends.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+    }
+    else if (a === 'token') {
+      var tk = window.prompt('Paste a GitHub fine-grained token with Contents: Read and write on ' + GH.repo + '. It is stored only in this browser.', '');
+      if (tk && tk.trim()) { try { localStorage.setItem(GH.key, tk.trim()); } catch (er) {} setPub('', false); state.pub = ''; statusText(); publishRoster(); }
     }
     else if (a === 'rmphoto') { formPhoto = ''; renderPhoto(); }
     else if (a === 'close') closeOverlay();
