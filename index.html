@@ -1,0 +1,607 @@
+<title>Cogfile</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: a bento file of friends. Floating pill nav, a hero of mixed-size tiles,
+   a kinetic type band, then roster, function map, type index and function guide. */
+:root {
+  --bg: #2b1d52;
+  --surface: #37286b;
+  --surface-2: #43327f;
+  --line: #55428f;
+  --fg: #fff1c9;
+  --fg-dim: #cdbfe8;
+  --accent: #ff6b9d;
+  --accent-text: #ff7fab;
+  --on-accent: #2b1d52;
+  --scrim: rgba(30, 18, 66, .75);
+  --f-display: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+  --f-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #fff1c9; --surface: #ffe8a8; --surface-2: #ffde86; --line: #eec968;
+    --fg: #2b1d52; --fg-dim: #5a4a88; --accent-text: #c2185b; --on-accent: #2b1d52; --scrim: rgba(43, 29, 82, .55);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #fff1c9; --surface: #ffe8a8; --surface-2: #ffde86; --line: #eec968;
+  --fg: #2b1d52; --fg-dim: #5a4a88; --accent-text: #c2185b; --on-accent: #2b1d52; --scrim: rgba(43, 29, 82, .55);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.5;
+  padding-block: 0 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 40; background: var(--bg);
+}
+.wrap { max-width: 1240px; margin-inline: auto; display: flex; flex-direction: column; gap: 88px; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+
+/* nav */
+.nav {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 30;
+  margin-top: 12px; padding: 8px 8px 8px 20px; border-radius: 999px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+}
+.logo { font-family: var(--f-display); font-weight: 800; font-stretch: 80%; font-size: 20px; letter-spacing: -.02em; text-decoration: none; color: var(--fg); display: flex; align-items: center; gap: 8px; }
+.logo i { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+.links { display: flex; gap: 4px; margin-left: auto; overflow-x: auto; min-width: 0; }
+.links a { color: var(--fg-dim); text-decoration: none; font-size: 14px; font-weight: 500; padding: 7px 12px; border-radius: 999px; white-space: nowrap; }
+.links a:hover { color: var(--fg); background: var(--surface-2); }
+.btn { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 18px; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.btn:hover { background: var(--surface-2); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: color-mix(in srgb, var(--accent) 82%, var(--fg)); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.nav .btn-primary { margin-left: 0; }
+@media (max-width: 720px) { .nav { border-radius: 24px; padding-left: 16px; } .links { order: 3; width: 100%; margin-left: -8px; } }
+
+/* tiles + hero */
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: clamp(18px, 3vw, 30px); min-width: 0; }
+.hero { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; }
+.t-intro { grid-column: span 8; display: flex; flex-direction: column; justify-content: space-between; gap: 36px; min-height: 340px; }
+.t-count { grid-column: span 4; background: var(--accent); border-color: var(--accent); color: var(--on-accent); display: flex; flex-direction: column; justify-content: space-between; gap: 16px; }
+.t-stat { grid-column: span 4; display: flex; flex-direction: column; gap: 14px; justify-content: space-between; min-height: 170px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-dim); }
+.t-count .eyebrow { color: color-mix(in srgb, var(--on-accent) 78%, transparent); }
+h1 { font-family: var(--f-display); font-weight: 800; font-stretch: 78%; font-size: clamp(2.7rem, 7.4vw, 6.2rem); line-height: .92; letter-spacing: -.035em; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--accent-text); }
+.lede { max-width: 56ch; color: var(--fg-dim); font-size: 17px; }
+.big-num { font-family: var(--f-display); font-weight: 800; font-stretch: 75%; font-size: clamp(6rem, 13vw, 10.5rem); line-height: .8; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.t-count p { font-size: 15px; line-height: 1.35; }
+.stat-v { font-family: var(--f-display); font-weight: 800; font-stretch: 80%; font-size: clamp(2.4rem, 4.4vw, 3.6rem); line-height: 1; letter-spacing: -.03em; }
+.stat-v small { display: block; font-family: var(--f-body); font-weight: 500; font-stretch: 100%; font-size: 15px; letter-spacing: 0; color: var(--fg-dim); margin-top: 8px; }
+.stat-v.empty { color: var(--fg-dim); }
+@media (max-width: 900px) { .t-intro { grid-column: span 12; min-height: 0; } .t-count { grid-column: span 12; } .t-stat { grid-column: span 4; } }
+@media (max-width: 640px) { .t-stat { grid-column: span 12; min-height: 0; } }
+
+/* kinetic band */
+.band { overflow: hidden; padding: 6px 0; border-block: 1px solid var(--line); margin-top: -40px; }
+.band-track { display: flex; width: max-content; animation: slide 38s linear infinite; }
+.band span { font-family: var(--f-display); font-weight: 800; font-stretch: 75%; font-size: clamp(3rem, 8vw, 6.5rem); letter-spacing: -.02em; line-height: 1.1; padding-right: .5em; color: transparent; -webkit-text-stroke: 1.5px var(--fg); white-space: nowrap; }
+.band span.on { color: var(--accent); -webkit-text-stroke-color: var(--accent); }
+@keyframes slide { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .band-track { animation: none; } html { scroll-behavior: auto; } }
+
+/* sections */
+.sec-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+h2 { font-family: var(--f-display); font-weight: 800; font-stretch: 80%; font-size: clamp(2.2rem, 5vw, 3.8rem); line-height: .98; letter-spacing: -.03em; text-wrap: balance; max-width: 18ch; }
+.sec-head p { color: var(--fg-dim); max-width: 60ch; }
+
+/* roster */
+.tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.field { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; font: inherit; width: 100%; }
+.field::placeholder { color: var(--fg-dim); }
+.search { max-width: 280px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 5px 12px; font-family: var(--f-mono); font-size: 13px; color: var(--fg-dim); }
+.chip:hover { color: var(--fg); border-color: var(--fg-dim); }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.chip sup { font-size: 10px; margin-left: 3px; opacity: .8; }
+.status { font-family: var(--f-mono); font-size: 12px; color: var(--fg-dim); margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--fg-dim); }
+.status.ok::before { background: #6bbf7a; }
+.status.warn::before { background: var(--accent-text); }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr)); gap: 12px; }
+.fcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.fcard header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.typecode { background: none; border: 0; padding: 0; font-family: var(--f-display); font-weight: 800; font-stretch: 78%; font-size: 40px; line-height: 1; letter-spacing: -.02em; color: var(--accent-text); }
+.typecode:hover { text-decoration: underline; text-underline-offset: 5px; }
+.conf { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; border: 1px solid var(--fg-dim); border-radius: 999px; padding: 3px 9px; color: var(--fg-dim); white-space: nowrap; }
+.conf.confirmed { border-color: var(--fg); color: var(--fg); }
+.conf.guess { border-style: dashed; }
+.fcard h3 { font-family: var(--f-display); font-weight: 700; font-size: 24px; letter-spacing: -.02em; line-height: 1.1; overflow-wrap: anywhere; }
+.nick { font-size: 13px; color: var(--fg-dim); margin-top: 4px; }
+.stack { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.fn { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px 7px; text-align: center; }
+.fn i { display: block; font-style: normal; font-family: var(--f-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-dim); }
+.fn b { font-family: var(--f-mono); font-weight: 500; font-size: 18px; }
+.fn.dom { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.fn.dom i { color: color-mix(in srgb, var(--on-accent) 75%, transparent); }
+.note { font-size: 14px; color: var(--fg-dim); overflow-wrap: anywhere; }
+.fcard footer { margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.confirm { font-size: 13px; width: 100%; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.danger { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.ghost-card { border: 1.5px dashed var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; opacity: .85; }
+.ghost-card .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); }
+.empty-msg { grid-column: 1 / -1; padding: 24px; border: 1.5px dashed var(--line); border-radius: 16px; color: var(--fg-dim); }
+
+/* function map */
+.scroll { overflow-x: auto; }
+.matrix { display: grid; grid-template-columns: 96px repeat(4, minmax(150px, 1fr)); gap: 6px; min-width: 700px; }
+.mh { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-dim); padding: 0 4px 6px; }
+.mh small { display: block; text-transform: none; letter-spacing: 0; opacity: .8; }
+.mrow { font-family: var(--f-mono); font-size: 26px; font-weight: 500; display: flex; align-items: center; padding-left: 4px; }
+.mrow small { display: block; font-size: 11px; color: var(--fg-dim); }
+.mcell { --h: 0; border-radius: 12px; padding: 10px 12px; min-height: 76px; background: color-mix(in srgb, var(--accent) calc(var(--h) * 1%), var(--surface)); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+.mcell .n { font-family: var(--f-display); font-weight: 800; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
+.mcell .who { font-size: 12px; line-height: 1.3; color: var(--fg-dim); overflow-wrap: anywhere; }
+.mcell.zero .n { color: var(--fg-dim); font-weight: 500; }
+.mcell.hot { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.mcell.hot .who { color: color-mix(in srgb, var(--on-accent) 85%, transparent); }
+.dich { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+.dich .tile { display: flex; flex-direction: column; gap: 12px; padding: 18px; }
+.dich .lbl { display: flex; justify-content: space-between; font-family: var(--f-mono); font-size: 13px; }
+.dich .lbl b { font-size: 22px; font-family: var(--f-display); font-weight: 800; }
+.bar { height: 10px; border-radius: 99px; background: var(--surface-2); overflow: hidden; display: flex; }
+.bar i { display: block; background: var(--accent-text); }
+.dich small { color: var(--fg-dim); font-size: 12px; }
+
+/* type index */
+.group { margin-bottom: 36px; }
+.group h3 { font-family: var(--f-mono); font-weight: 500; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--fg-dim); margin-bottom: 12px; display: flex; gap: 10px; align-items: baseline; }
+.group h3 b { color: var(--accent-text); font-weight: 500; }
+.tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.ttile { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; position: relative; min-width: 0; }
+.ttile:hover { border-color: var(--accent-text); transform: translateY(-3px) rotate(-1deg); }
+.fcard:hover { border-color: var(--accent-text); }
+.ttile { transition: transform .15s ease, border-color .15s ease; }
+.ttile .code { font-family: var(--f-display); font-weight: 800; font-stretch: 78%; font-size: 36px; line-height: 1; letter-spacing: -.02em; }
+.ttile .nm { font-size: 14px; color: var(--fg-dim); }
+.ttile .st { font-family: var(--f-mono); font-size: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+.ttile .st span:first-child { color: var(--accent-text); font-weight: 500; }
+.ttile .st span + span::before { content: "·"; margin-right: 6px; color: var(--fg-dim); }
+.badge { position: absolute; top: 14px; right: 14px; background: var(--accent); color: var(--on-accent); font-family: var(--f-mono); font-size: 11px; padding: 3px 9px; border-radius: 99px; }
+
+/* functions */
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.fcd { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+.fcd .cd { font-family: var(--f-mono); font-size: 44px; font-weight: 500; line-height: 1; color: var(--accent-text); }
+.fcd h3 { font-family: var(--f-display); font-weight: 700; font-size: 20px; letter-spacing: -.01em; }
+.fcd .kind { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); }
+.fcd p { font-size: 14.5px; color: var(--fg-dim); }
+.fcd .lead { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-dim); }
+.fcd .lead b { color: var(--fg); font-weight: 600; }
+
+footer.site { color: var(--fg-dim); font-size: 13px; border-top: 1px solid var(--line); padding-top: 20px; max-width: 70ch; }
+
+/* overlay */
+.overlay { position: fixed; inset: 0; z-index: 60; background: var(--scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.overlay[hidden] { display: none; }
+.panel { background: var(--bg); border: 1px solid var(--line); border-radius: 24px; width: 100%; max-width: 620px; max-height: 100%; overflow-y: auto; padding: clamp(20px, 4vw, 32px); display: flex; flex-direction: column; gap: 20px; position: relative; }
+.panel .close { position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 18px; line-height: 1; display: grid; place-items: center; }
+.panel h2 { font-size: clamp(2rem, 6vw, 3rem); max-width: none; }
+.panel .sub { color: var(--fg-dim); margin-top: -10px; }
+.prow { display: grid; grid-template-columns: 56px 1fr; gap: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.prow .cd { font-family: var(--f-mono); font-size: 30px; font-weight: 500; color: var(--accent-text); line-height: 1.1; }
+.prow h4 { margin: 0; font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); font-weight: 500; }
+.prow b { display: block; font-size: 16px; margin: 2px 0 4px; }
+.prow p { font-size: 14px; color: var(--fg-dim); }
+.who-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.who-list span { background: var(--surface-2); border-radius: 99px; padding: 4px 12px; font-size: 14px; }
+form.fform { display: flex; flex-direction: column; gap: 14px; }
+.fform label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; }
+.fform .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .fform .two { grid-template-columns: 1fr; } }
+.fform textarea { resize: vertical; min-height: 84px; }
+.fform .err { color: var(--accent-text); font-size: 14px; min-height: 1em; }
+.fform .acts { display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+
+<div class="wrap">
+  <nav class="nav" aria-label="Sections">
+    <a class="logo" href="#top"><i></i>Cogfile</a>
+    <div class="links">
+      <a href="#roster">Roster</a>
+      <a href="#map">Function map</a>
+      <a href="#types">16 types</a>
+      <a href="#functions">Functions</a>
+    </div>
+    <button class="btn btn-primary" id="navAdd" data-action="add" hidden>Add friend</button>
+  </nav>
+
+  <header id="top" class="hero">
+    <div class="tile t-intro">
+      <span class="eyebrow">A personal field file</span>
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <h1>Eight functions. Sixteen stacks. <em>Everyone I know.</em></h1>
+        <p class="lede">A running file on how my friends process the world: what they lead with, what they lean on, and where they crack under stress.</p>
+      </div>
+    </div>
+    <div class="tile t-count">
+      <span class="eyebrow">On file</span>
+      <div class="big-num" id="statCount">0</div>
+      <p id="statCover">0 of 16 types covered</p>
+    </div>
+    <div class="tile t-stat"><span class="eyebrow">Most common type</span><div class="stat-v" id="statType"></div></div>
+    <div class="tile t-stat"><span class="eyebrow">Most common lead function</span><div class="stat-v" id="statFn"></div></div>
+    <div class="tile t-stat"><span class="eyebrow">Latest entry</span><div class="stat-v" id="statNew"></div></div>
+  </header>
+
+  <div class="band" aria-hidden="true"><div class="band-track" id="bandTrack"></div></div>
+
+  <section id="roster">
+    <div class="sec-head">
+      <span class="eyebrow">/ roster</span>
+      <h2>The people, by stack</h2>
+      <p>Each card shows the four functions in the order they are used. The filled cell is the dominant function, the one they trust first.</p>
+    </div>
+    <div class="tools">
+      <input class="field search" id="q" type="search" placeholder="Search name or type" aria-label="Search friends">
+      <div class="chips" id="chips" role="group" aria-label="Filter by dominant function"></div>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section id="map">
+    <div class="sec-head">
+      <span class="eyebrow">/ function map</span>
+      <h2>Where each function lives in my circle</h2>
+      <p>Rows are the eight functions, columns are stack positions. Dark cells are where my friends cluster.</p>
+    </div>
+    <div class="scroll"><div class="matrix" id="matrix"></div></div>
+    <div class="dich" id="dich"></div>
+  </section>
+
+  <section id="types">
+    <div class="sec-head">
+      <span class="eyebrow">/ type index</span>
+      <h2>All sixteen stacks</h2>
+      <p>Open any type to see its four functions, what each position does, and which friends have it.</p>
+    </div>
+    <div id="typeGroups"></div>
+  </section>
+
+  <section id="functions">
+    <div class="sec-head">
+      <span class="eyebrow">/ function guide</span>
+      <h2>The eight cognitive functions</h2>
+      <p>Four perceiving and four judging, each pointed inward or outward. Every type is a different ordering of four of them.</p>
+    </div>
+    <div class="fgrid" id="fnGrid"></div>
+  </section>
+
+  <footer class="site">MBTI is a framework for talking about how people differ, not a diagnosis. Stacks follow the standard Jungian ordering used in function theory: dominant, auxiliary, tertiary, inferior.</footer>
+</div>
+
+<div class="overlay" id="overlay" hidden><div class="panel" id="panel" role="dialog" aria-modal="true"></div></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var FN = {
+    Ni: { name: 'Introverted Intuition', kind: 'Perceiving', d: 'Convergent insight. Compresses scattered patterns into one conclusion about where things are heading, often before it can be explained.' },
+    Ne: { name: 'Extraverted Intuition', kind: 'Perceiving', d: 'Divergent possibility. Sees what something could be, jumps between connections, and opens every idea up to see what else is inside.' },
+    Si: { name: 'Introverted Sensing', kind: 'Perceiving', d: 'Stored experience. Measures the present against what has been lived, remembered and proven, down to small details.' },
+    Se: { name: 'Extraverted Sensing', kind: 'Perceiving', d: 'Live perception. Fully absorbed in what is happening right now, quick to read the room and act on it.' },
+    Ti: { name: 'Introverted Thinking', kind: 'Judging', d: 'Internal framework. Builds precise logical models and needs every piece to be consistent before trusting it.' },
+    Te: { name: 'Extraverted Thinking', kind: 'Judging', d: 'External efficiency. Organizes the world through systems, facts and measurable results.' },
+    Fi: { name: 'Introverted Feeling', kind: 'Judging', d: 'Internal compass. Personal values and authenticity decide what matters, and rarely bend to pressure.' },
+    Fe: { name: 'Extraverted Feeling', kind: 'Judging', d: 'Group harmony. Reads the emotional climate of a room and works to shape it for everyone in it.' }
+  };
+  var FN_ORDER = ['Ni', 'Ne', 'Si', 'Se', 'Ti', 'Te', 'Fi', 'Fe'];
+  var POS = [
+    { k: 'Dominant', s: 'Dom', role: 'The hero', d: 'What they trust first and lead with. Strongest, most natural and most visible.' },
+    { k: 'Auxiliary', s: 'Aux', role: 'The parent', d: 'Supports and balances the dominant. Usually the function friends meet second.' },
+    { k: 'Tertiary', s: 'Ter', role: 'The child', d: 'Playful and less reliable when young, a growing strength and a source of relief later.' },
+    { k: 'Inferior', s: 'Inf', role: 'The weak spot', d: 'The least developed function. Tends to show up clumsily under stress.' }
+  ];
+  var GROUPS = [
+    { g: 'NT', name: 'Analysts' }, { g: 'NF', name: 'Diplomats' },
+    { g: 'SJ', name: 'Sentinels' }, { g: 'SP', name: 'Explorers' }
+  ];
+  var TYPES = [
+    { c: 'INTJ', n: 'Architect', g: 'NT', s: ['Ni', 'Te', 'Fi', 'Se'], t: 'Sees the endpoint first, then engineers the route.' },
+    { c: 'INTP', n: 'Logician', g: 'NT', s: ['Ti', 'Ne', 'Si', 'Fe'], t: 'Rebuilds every idea from first principles until it holds.' },
+    { c: 'ENTJ', n: 'Commander', g: 'NT', s: ['Te', 'Ni', 'Se', 'Fi'], t: 'Turns a vision into a plan and a plan into a team.' },
+    { c: 'ENTP', n: 'Debater', g: 'NT', s: ['Ne', 'Ti', 'Fe', 'Si'], t: 'Argues every angle for sport and finds the one nobody saw.' },
+    { c: 'INFJ', n: 'Advocate', g: 'NF', s: ['Ni', 'Fe', 'Ti', 'Se'], t: 'Reads people and futures quietly, then acts on conviction.' },
+    { c: 'INFP', n: 'Mediator', g: 'NF', s: ['Fi', 'Ne', 'Si', 'Te'], t: 'Lives by an inner code and an endless supply of what-ifs.' },
+    { c: 'ENFJ', n: 'Protagonist', g: 'NF', s: ['Fe', 'Ni', 'Se', 'Ti'], t: 'Sees what people could become and pulls them toward it.' },
+    { c: 'ENFP', n: 'Campaigner', g: 'NF', s: ['Ne', 'Fi', 'Te', 'Si'], t: 'Chases possibilities, but only the ones that mean something.' },
+    { c: 'ISTJ', n: 'Logistician', g: 'SJ', s: ['Si', 'Te', 'Fi', 'Ne'], t: 'Reliable and exact, built on what has been proven to work.' },
+    { c: 'ISFJ', n: 'Defender', g: 'SJ', s: ['Si', 'Fe', 'Ti', 'Ne'], t: 'Remembers what matters to people and quietly protects it.' },
+    { c: 'ESTJ', n: 'Executive', g: 'SJ', s: ['Te', 'Si', 'Ne', 'Fi'], t: 'Runs the system: clear rules, clear roles, results on time.' },
+    { c: 'ESFJ', n: 'Consul', g: 'SJ', s: ['Fe', 'Si', 'Ne', 'Ti'], t: 'Keeps everyone connected, fed and looked after.' },
+    { c: 'ISTP', n: 'Virtuoso', g: 'SP', s: ['Ti', 'Se', 'Ni', 'Fe'], t: 'Calm and hands-on, takes things apart to see how they work.' },
+    { c: 'ISFP', n: 'Adventurer', g: 'SP', s: ['Fi', 'Se', 'Ni', 'Te'], t: 'Quiet, sensory and true to themselves, shown through doing.' },
+    { c: 'ESTP', n: 'Entrepreneur', g: 'SP', s: ['Se', 'Ti', 'Fe', 'Ni'], t: 'Reads the room in a second and moves before others decide.' },
+    { c: 'ESFP', n: 'Entertainer', g: 'SP', s: ['Se', 'Fi', 'Te', 'Ni'], t: 'Pulls everyone into the moment and makes it stick.' }
+  ];
+  var TBY = {}; TYPES.forEach(function (t) { TBY[t.c] = t; });
+  var CONF = { confirmed: 'Confirmed', likely: 'Likely', guess: 'Guessing' };
+  var LS_KEY = 'cogfile.friends.v1';
+
+  var state = { mode: 'pending', canWrite: false, friends: [], q: '', lead: 'all', confirmId: null, warn: false };
+  var col = null;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function sorted() { return state.friends.slice().sort(function (a, b) { return String(a.name).toLowerCase() < String(b.name).toLowerCase() ? -1 : 1; }); }
+  function validFriends() { return state.friends.filter(function (f) { return TBY[f.type]; }); }
+  function plural(n, w) { return n + ' ' + w + (n === 1 ? '' : 's'); }
+
+  /* ---------- hero ---------- */
+  function renderHero() {
+    var fr = validFriends(), n = fr.length;
+    $('statCount').textContent = n;
+    var typeCount = {}, fnCount = {};
+    fr.forEach(function (f) { typeCount[f.type] = (typeCount[f.type] || 0) + 1; var d = TBY[f.type].s[0]; fnCount[d] = (fnCount[d] || 0) + 1; });
+    $('statCover').textContent = Object.keys(typeCount).length + ' of 16 types covered';
+    var empty = '<span class="empty">None yet</span>';
+    var top = Object.keys(typeCount).sort(function (a, b) { return typeCount[b] - typeCount[a] || (a < b ? -1 : 1); })[0];
+    $('statType').innerHTML = top ? esc(top) + '<small>' + esc(TBY[top].n) + ', ' + plural(typeCount[top], 'friend') + '</small>' : '<span class="stat-v empty" style="font-size:inherit">None yet</span><small>Add a friend to start</small>';
+    var topF = Object.keys(fnCount).sort(function (a, b) { return fnCount[b] - fnCount[a] || (a < b ? -1 : 1); })[0];
+    $('statFn').innerHTML = topF ? esc(topF) + '<small>' + esc(FN[topF].name) + ', leads for ' + fnCount[topF] + '</small>' : '<span class="stat-v empty" style="font-size:inherit">None yet</span><small>Add a friend to start</small>';
+    var newest = fr.slice().sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); })[0];
+    $('statNew').innerHTML = newest ? esc(newest.name) + '<small>' + esc(newest.type) + ' ' + esc(TBY[newest.type].n) + '</small>' : '<span class="stat-v empty" style="font-size:inherit">None yet</span><small>Nobody on file</small>';
+    $('navAdd').hidden = !state.canWrite;
+  }
+
+  function renderBand() {
+    var one = FN_ORDER.map(function (f, i) { return '<span' + (i % 4 === 0 ? ' class="on"' : '') + '>' + f + '</span>'; }).join('');
+    $('bandTrack').innerHTML = '<div style="display:flex">' + one + one + '</div><div style="display:flex">' + one + one + '</div>';
+  }
+
+  /* ---------- roster ---------- */
+  function stackHtml(t) {
+    return '<div class="stack">' + TBY[t].s.map(function (f, i) { return '<div class="fn' + (i === 0 ? ' dom' : '') + '"><i>' + POS[i].s + '</i><b>' + f + '</b></div>'; }).join('') + '</div>';
+  }
+  function statusText() {
+    var el = $('status'), t = '', cls = '';
+    if (state.mode === 'pending') t = 'Connecting to saved data';
+    else if (state.warn) { t = 'Saved data is slow to respond. Showing what loaded so far.'; cls = 'warn'; }
+    else if (state.mode === 'local') t = 'Saved in this browser only';
+    else if (state.canWrite) { t = 'Synced to this page. Changes save automatically.'; cls = 'ok'; }
+    else t = 'View only. Only the owner can edit the roster.';
+    el.className = 'status ' + cls; el.textContent = t;
+  }
+  function renderChips() {
+    var counts = {}; validFriends().forEach(function (f) { var d = TBY[f.type].s[0]; counts[d] = (counts[d] || 0) + 1; });
+    var h = '<button class="chip" data-action="filter" data-fn="all" aria-pressed="' + (state.lead === 'all') + '">All<sup>' + validFriends().length + '</sup></button>';
+    FN_ORDER.forEach(function (f) { h += '<button class="chip" data-action="filter" data-fn="' + f + '" aria-pressed="' + (state.lead === f) + '">' + f + (counts[f] ? '<sup>' + counts[f] + '</sup>' : '') + '</button>'; });
+    $('chips').innerHTML = h;
+  }
+  function renderCards() {
+    var q = state.q.trim().toLowerCase();
+    var list = sorted().filter(function (f) {
+      if (!TBY[f.type]) return false;
+      if (state.lead !== 'all' && TBY[f.type].s[0] !== state.lead) return false;
+      if (q && (String(f.name).toLowerCase().indexOf(q) < 0 && f.type.toLowerCase().indexOf(q) < 0)) return false;
+      return true;
+    });
+    var h = '';
+    if (!state.friends.length) {
+      h += '<div class="ghost-card"><span class="tag">Example entry</span><div><div class="typecode" style="color:var(--fg-dim)">ENFP</div></div><div><h3 style="font-family:var(--f-display);font-size:24px;font-weight:700">Friend name</h3><p class="nick">Campaigner, how you met</p></div>' + stackHtml('ENFP') + '<p class="note">Notes go here. How they decide, how they argue, what stresses them out.</p>' +
+        (state.canWrite ? '<div><button class="btn btn-primary btn-sm" data-action="add">Add your first friend</button></div>' : '') + '</div>';
+      if (!state.canWrite && state.mode !== 'pending') h += '<div class="empty-msg">Nobody is on file yet.</div>';
+    }
+    list.forEach(function (f) {
+      var t = TBY[f.type], conf = CONF[f.conf] ? f.conf : 'likely';
+      h += '<article class="fcard"><header><button class="typecode" data-action="type" data-type="' + f.type + '" aria-label="Open ' + f.type + ' details">' + f.type + '</button><span class="conf ' + conf + '">' + CONF[conf] + '</span></header>' +
+        '<div><h3>' + esc(f.name) + '</h3><p class="nick">' + esc(t.n) + (f.how ? ' · ' + esc(f.how) : '') + '</p></div>' + stackHtml(f.type) +
+        (f.note ? '<p class="note">' + esc(f.note) + '</p>' : '') +
+        (state.canWrite ? '<footer>' + (state.confirmId === f.id ?
+          '<div class="confirm"><span>Remove ' + esc(f.name) + '?</span><button class="btn btn-sm danger" data-action="delyes" data-id="' + esc(f.id) + '">Yes, remove</button><button class="btn btn-sm" data-action="delno">Cancel</button></div>' :
+          '<button class="btn btn-sm" data-action="edit" data-id="' + esc(f.id) + '">Edit</button><button class="btn btn-sm" data-action="del" data-id="' + esc(f.id) + '">Remove</button>') + '</footer>' : '') +
+        '</article>';
+    });
+    if (state.friends.length && !list.length) h += '<div class="empty-msg">No friends match that filter.</div>';
+    $('cards').innerHTML = h;
+  }
+
+  /* ---------- map ---------- */
+  function renderMap() {
+    var fr = validFriends(), grid = {}, max = 0;
+    FN_ORDER.forEach(function (f) { grid[f] = [[], [], [], []]; });
+    fr.forEach(function (fd) { TBY[fd.type].s.forEach(function (f, i) { grid[f][i].push(fd.name); }); });
+    FN_ORDER.forEach(function (f) { grid[f].forEach(function (a) { if (a.length > max) max = a.length; }); });
+    var h = '<div></div>' + POS.map(function (p) { return '<div class="mh">' + p.k + '<small>' + p.role + '</small></div>'; }).join('');
+    FN_ORDER.forEach(function (f) {
+      h += '<div class="mrow"><div>' + f + '<small>' + FN[f].kind + '</small></div></div>';
+      grid[f].forEach(function (names) {
+        var n = names.length, ratio = max ? n / max : 0;
+        var cls = 'mcell' + (n === 0 ? ' zero' : '') + (ratio > 0.6 && n > 1 ? ' hot' : '');
+        var shown = names.slice(0, 3).map(esc).join(', ') + (n > 3 ? ' +' + (n - 3) : '');
+        h += '<div class="' + cls + '" style="--h:' + Math.round(ratio * 45) + '"><span class="n">' + n + '</span><span class="who">' + (n ? shown : '&nbsp;') + '</span></div>';
+      });
+    });
+    $('matrix').innerHTML = h;
+    var pairs = [['E', 'I', 0, 'Extraverts and introverts'], ['N', 'S', 1, 'Intuitives and sensors'], ['T', 'F', 2, 'Thinkers and feelers'], ['J', 'P', 3, 'Judgers and perceivers']];
+    var d = '';
+    pairs.forEach(function (p) {
+      var a = 0, b = 0;
+      fr.forEach(function (f) { var ch = f.type.charAt(p[2]); if (ch === p[0]) a++; else b++; });
+      var tot = a + b, pa = tot ? a / tot * 100 : 50;
+      d += '<div class="tile"><div class="lbl"><span><b>' + p[0] + '</b> ' + a + '</span><span>' + b + ' <b>' + p[1] + '</b></span></div><div class="bar"><i style="width:' + pa + '%"></i></div><small>' + p[3] + (tot ? '' : ', no data yet') + '</small></div>';
+    });
+    $('dich').innerHTML = d;
+  }
+
+  /* ---------- types + functions ---------- */
+  function renderTypes() {
+    var counts = {}; validFriends().forEach(function (f) { counts[f.type] = (counts[f.type] || 0) + 1; });
+    var h = '';
+    GROUPS.forEach(function (g) {
+      h += '<div class="group"><h3><b>' + g.g + '</b> ' + g.name + '</h3><div class="tgrid">';
+      TYPES.filter(function (t) { return t.g === g.g; }).forEach(function (t) {
+        h += '<button class="ttile" data-action="type" data-type="' + t.c + '">' + (counts[t.c] ? '<span class="badge">' + plural(counts[t.c], 'friend') + '</span>' : '') +
+          '<span class="code">' + t.c + '</span><span class="nm">' + t.n + '</span><span class="st">' + t.s.map(function (f) { return '<span>' + f + '</span>'; }).join('') + '</span></button>';
+      });
+      h += '</div></div>';
+    });
+    $('typeGroups').innerHTML = h;
+  }
+  function renderFns() {
+    var lead = {}, cnt = {};
+    TYPES.forEach(function (t) { (lead[t.s[0]] = lead[t.s[0]] || []).push(t.c); });
+    validFriends().forEach(function (f) { var d = TBY[f.type].s[0]; cnt[d] = (cnt[d] || 0) + 1; });
+    $('fnGrid').innerHTML = FN_ORDER.map(function (f) {
+      return '<div class="tile fcd"><span class="cd">' + f + '</span><div><h3>' + FN[f].name + '</h3><span class="kind">' + FN[f].kind + '</span></div><p>' + FN[f].d + '</p><div class="lead">Leads for <b>' + lead[f].join(' and ') + '</b>. ' + plural(cnt[f] || 0, 'friend') + ' on file.</div></div>';
+    }).join('');
+  }
+
+  function render() { renderHero(); statusText(); renderChips(); renderCards(); renderMap(); renderTypes(); renderFns(); }
+
+  /* ---------- overlay ---------- */
+  function openOverlay(html, focusSel) {
+    $('panel').innerHTML = '<button class="close" data-action="close" aria-label="Close">&times;</button>' + html;
+    $('overlay').hidden = false;
+    var f = focusSel ? $('panel').querySelector(focusSel) : $('panel').querySelector('.close');
+    if (f) f.focus();
+  }
+  function closeOverlay() { $('overlay').hidden = true; $('panel').innerHTML = ''; }
+
+  function openType(code) {
+    var t = TBY[code]; if (!t) return;
+    var who = validFriends().filter(function (f) { return f.type === code; });
+    var h = '<div class="eyebrow">' + GROUPS.filter(function (g) { return g.g === t.g; })[0].name + '</div><h2>' + t.c + '</h2><p class="sub">' + t.n + '. ' + t.t + '</p>';
+    t.s.forEach(function (f, i) {
+      h += '<div class="prow"><div class="cd">' + f + '</div><div><h4>' + POS[i].k + ' · ' + POS[i].role + '</h4><b>' + FN[f].name + '</b><p>' + POS[i].d + ' ' + FN[f].d + '</p></div></div>';
+    });
+    h += '<div class="prow"><div class="cd" style="font-size:20px;padding-top:6px">You</div><div><h4>Friends with this type</h4>' +
+      (who.length ? '<div class="who-list">' + who.map(function (f) { return '<span>' + esc(f.name) + '</span>'; }).join('') + '</div>' : '<p>Nobody on file with this type yet.</p>') + '</div></div>';
+    if (state.canWrite) h += '<div><button class="btn btn-primary" data-action="addtype" data-type="' + code + '">Add a ' + code + ' friend</button></div>';
+    openOverlay(h);
+  }
+
+  function openForm(friend, presetType) {
+    var f = friend || { name: '', type: presetType || '', conf: 'likely', how: '', note: '' };
+    var opts = '<option value="">Choose a type</option>' + GROUPS.map(function (g) {
+      return '<optgroup label="' + g.name + '">' + TYPES.filter(function (t) { return t.g === g.g; }).map(function (t) { return '<option value="' + t.c + '"' + (f.type === t.c ? ' selected' : '') + '>' + t.c + ' ' + t.n + '</option>'; }).join('') + '</optgroup>';
+    }).join('');
+    var confOpts = Object.keys(CONF).map(function (k) { return '<option value="' + k + '"' + (f.conf === k ? ' selected' : '') + '>' + CONF[k] + '</option>'; }).join('');
+    var h = '<div class="eyebrow">' + (friend ? 'Edit entry' : 'New entry') + '</div><h2>' + (friend ? esc(f.name) : 'Add a friend') + '</h2>' +
+      '<form class="fform" id="fform" data-id="' + esc(friend ? friend.id : '') + '" novalidate>' +
+      '<label for="f-name">Name<input class="field" id="f-name" maxlength="60" value="' + esc(f.name) + '" autocomplete="off"></label>' +
+      '<div class="two"><label for="f-type">Type<select class="field" id="f-type">' + opts + '</select></label>' +
+      '<label for="f-conf">How sure am I<select class="field" id="f-conf">' + confOpts + '</select></label></div>' +
+      '<div id="f-prev"></div>' +
+      '<label for="f-how">How I know them<input class="field" id="f-how" maxlength="80" placeholder="School, work, childhood, a mutual" value="' + esc(f.how) + '" autocomplete="off"></label>' +
+      '<label for="f-note">Notes on how they think<textarea class="field" id="f-note" maxlength="600" placeholder="How they decide, argue, relax, and what stresses them out">' + esc(f.note) + '</textarea></label>' +
+      '<div class="err" id="f-err" role="alert"></div>' +
+      '<div class="acts"><button type="button" class="btn" data-action="close">Cancel</button><button type="submit" class="btn btn-primary">Save friend</button></div></form>';
+    openOverlay(h, '#f-name');
+    updatePreview();
+  }
+  function updatePreview() {
+    var sel = $('f-type'), p = $('f-prev'); if (!sel || !p) return;
+    p.innerHTML = sel.value ? stackHtml(sel.value) : '';
+  }
+
+  /* ---------- data ---------- */
+  function persistLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state.friends)); } catch (e) {} }
+  function newId() { return 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function save(id, data) {
+    if (state.mode === 'shared') {
+      if (id) { var old = state.friends.filter(function (x) { return x.id === id; })[0]; return col.doc(id).set(Object.assign({}, data, { createdAt: (old && old.createdAt) || Date.now() })); }
+      return col.add(Object.assign({}, data, { createdAt: Date.now() }));
+    }
+    if (id) { state.friends = state.friends.map(function (x) { return x.id === id ? Object.assign({}, x, data) : x; }); }
+    else state.friends.push(Object.assign({ id: newId(), createdAt: Date.now() }, data));
+    persistLocal(); render(); return Promise.resolve();
+  }
+  function remove(id) {
+    if (state.mode === 'shared') return col.doc(id).delete();
+    state.friends = state.friends.filter(function (x) { return x.id !== id; });
+    persistLocal(); render(); return Promise.resolve();
+  }
+
+  function useLocal() {
+    state.mode = 'local'; state.canWrite = true;
+    try { state.friends = JSON.parse(localStorage.getItem(LS_KEY) || '[]') || []; } catch (e) { state.friends = []; }
+    render();
+  }
+
+  function boot() {
+    render();
+    var cl = window.claude;
+    if (!cl || !cl.use) { useLocal(); return; }
+    var timedOut = false;
+    var t = setTimeout(function () { timedOut = true; useLocal(); }, 7000);
+    Promise.all([cl.use('db'), cl.use('user')]).then(function (r) {
+      if (timedOut) return;
+      clearTimeout(t);
+      var db = r[0], user = r[1];
+      if (!db) { useLocal(); return; }
+      state.mode = 'shared';
+      col = db.collection('friends');
+      return Promise.resolve(user ? user.canEdit() : false).then(function (ok) {
+        state.canWrite = !!ok; render();
+        var slow = setTimeout(function () { state.warn = true; statusText(); }, 10000);
+        col.onSnapshot(function (snap) {
+          clearTimeout(slow); if (!snap.metadata.fromCache || snap.size) state.warn = false;
+          state.friends = snap.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; });
+          render();
+        }, function () { clearTimeout(slow); state.warn = true; statusText(); });
+      });
+    }).catch(function () { if (!timedOut) { clearTimeout(t); useLocal(); } });
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', function (e) {
+    if (e.target === $('overlay')) { closeOverlay(); return; }
+    var el = e.target.closest('[data-action]'); if (!el) return;
+    var a = el.dataset.action, id = el.dataset.id;
+    if (a === 'add') openForm(null);
+    else if (a === 'addtype') openForm(null, el.dataset.type);
+    else if (a === 'edit') openForm(state.friends.filter(function (x) { return x.id === id; })[0]);
+    else if (a === 'del') { state.confirmId = id; renderCards(); }
+    else if (a === 'delno') { state.confirmId = null; renderCards(); }
+    else if (a === 'delyes') { state.confirmId = null; remove(id).catch(function () { state.warn = true; statusText(); }); renderCards(); }
+    else if (a === 'type') openType(el.dataset.type);
+    else if (a === 'close') closeOverlay();
+    else if (a === 'filter') { state.lead = el.dataset.fn; renderChips(); renderCards(); }
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !$('overlay').hidden) closeOverlay(); });
+  document.addEventListener('change', function (e) { if (e.target && e.target.id === 'f-type') updatePreview(); });
+  $('q').addEventListener('input', function (e) { state.q = e.target.value; renderCards(); });
+  document.addEventListener('submit', function (e) {
+    var form = e.target; if (form.id !== 'fform') return;
+    e.preventDefault();
+    var name = $('f-name').value.trim(), type = $('f-type').value, err = $('f-err');
+    if (!name) { err.textContent = 'Enter a name.'; $('f-name').focus(); return; }
+    if (!type) { err.textContent = 'Choose a type so the stack can be filled in.'; $('f-type').focus(); return; }
+    var data = { name: name, type: type, conf: $('f-conf').value, how: $('f-how').value.trim(), note: $('f-note').value.trim() };
+    err.textContent = '';
+    save(form.dataset.id || null, data).then(closeOverlay).catch(function () { err.textContent = 'That did not save. Check your connection and try again.'; });
+  });
+
+  renderBand();
+  boot();
+})();
+</script>
