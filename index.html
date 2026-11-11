@@ -279,6 +279,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
       <div class="chips" id="chips" role="group" aria-label="Filter by dominant function"></div>
     </div>
     <div class="status" id="status"></div>
+    <div style="margin:-8px 0 18px"><button class="btn btn-sm" id="exportBtn" data-action="export" hidden>Export roster (friends.json)</button></div>
     <div class="cards" id="cards"></div>
   </section>
 
@@ -401,10 +402,11 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     var el = $('status'), t = '', cls = '';
     if (state.mode === 'pending') t = 'Connecting to saved data';
     else if (state.warn) { t = 'Saved data is slow to respond. Showing what loaded so far.'; cls = 'warn'; }
-    else if (state.mode === 'local') t = 'Saved in this browser only';
+    else if (state.mode === 'local') t = state.canWrite ? 'Owner mode: edits are drafts in this browser. Export the roster to publish them.' : 'Roster kept by the site owner.';
     else if (state.canWrite) { t = 'Synced to this page. Changes save automatically.'; cls = 'ok'; }
     else t = 'View only. Only the owner can edit the roster.';
     el.className = 'status ' + cls; el.textContent = t;
+    $('exportBtn').hidden = !(state.mode === 'local' && state.canWrite);
   }
   function renderChips() {
     var counts = {}; validFriends().forEach(function (f) { var d = TBY[f.type].s[0]; counts[d] = (counts[d] || 0) + 1; });
@@ -582,10 +584,17 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
 
   function useLocal() {
     state.mode = 'local';
-    // Outside the claude.ai page there is no sign-in, so editing unlocks only on the owner's own browser: open the site once with #owner in the URL.
+    // No sign-in outside claude.ai: editing unlocks only on the owner's browser (open the site once with #owner).
     try { if (/[#?&]owner\b/.test(location.hash + location.search)) localStorage.setItem('cogfile.owner', '1'); state.canWrite = localStorage.getItem('cogfile.owner') === '1'; } catch (e) { state.canWrite = false; }
-    try { state.friends = JSON.parse(localStorage.getItem(LS_KEY) || '[]') || []; } catch (e) { state.friends = []; }
-    render();
+    var draft = null;
+    if (state.canWrite) { try { draft = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) {} }
+    var done = function (base) {
+      state.friends = Array.isArray(draft) ? draft : base;
+      render();
+    };
+    if (typeof fetch !== 'function') { done([]); return; }
+    fetch('friends.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : []; })
+      .then(function (d) { done(Array.isArray(d) ? d : []); }, function () { done([]); });
   }
 
   function boot() {
@@ -625,6 +634,10 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     else if (a === 'delno') { state.confirmId = null; renderCards(); }
     else if (a === 'delyes') { state.confirmId = null; remove(id).catch(function () { state.warn = true; statusText(); }); renderCards(); }
     else if (a === 'type') openType(el.dataset.type);
+    else if (a === 'export') {
+      var blob = new Blob([JSON.stringify(state.friends, null, 2)], { type: 'application/json' }), u = URL.createObjectURL(blob), l = document.createElement('a');
+      l.href = u; l.download = 'friends.json'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+    }
     else if (a === 'rmphoto') { formPhoto = ''; renderPhoto(); }
     else if (a === 'close') closeOverlay();
     else if (a === 'filter') { state.lead = el.dataset.fn; renderChips(); renderCards(); }
