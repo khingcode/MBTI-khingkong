@@ -129,7 +129,13 @@ h2 { font-family: var(--f-display); font-weight: 800; font-stretch: 80%; font-si
 .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--fg-dim); }
 .status.ok::before { background: #6bbf7a; }
 .status.warn::before { background: var(--accent-text); }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 272px), 1fr)); gap: 12px; }
+.cards { display: grid; grid-auto-flow: column; grid-auto-columns: min(82vw, 290px); gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 14px; scrollbar-width: thin; scrollbar-color: var(--accent) transparent; -webkit-overflow-scrolling: touch; }
+.cards > * { scroll-snap-align: start; }
+.cards::-webkit-scrollbar { height: 8px; }
+.cards::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 99px; }
+.slide-nav { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 8px; }
+.slide-nav .btn { padding: 4px 12px; }
+.slide-nav[hidden] { display: none; }
 .fcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .fcard header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .who-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -157,7 +163,7 @@ h2 { font-family: var(--f-display); font-weight: 800; font-stretch: 80%; font-si
 .danger { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .ghost-card { border: 1.5px dashed var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; opacity: .85; }
 .ghost-card .tag { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-dim); }
-.empty-msg { grid-column: 1 / -1; padding: 24px; border: 1.5px dashed var(--line); border-radius: 16px; color: var(--fg-dim); }
+.empty-msg { width: min(80vw, 420px); padding: 24px; border: 1.5px dashed var(--line); border-radius: 16px; color: var(--fg-dim); }
 
 /* function map */
 .scroll { overflow-x: auto; }
@@ -280,7 +286,8 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     </div>
     <div class="status" id="status"></div>
     <div style="margin:-8px 0 18px"><button class="btn btn-sm" id="tokenBtn" data-action="token" hidden>Connect GitHub</button> <button class="btn btn-sm" id="exportBtn" data-action="export" hidden>Export backup</button></div>
-    <div class="cards" id="cards"></div>
+    <div class="slide-nav" id="slideNav" hidden><button class="btn btn-sm" data-action="slide" data-dir="-1" aria-label="Scroll roster left">←</button><button class="btn btn-sm" data-action="slide" data-dir="1" aria-label="Scroll roster right">→</button></div>
+    <div class="cards" id="cards" tabindex="0" aria-label="Roster, scroll sideways for more"></div>
   </section>
 
   <section id="map">
@@ -442,6 +449,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
     });
     if (state.friends.length && !list.length) h += '<div class="empty-msg">No friends match that filter.</div>';
     $('cards').innerHTML = h;
+    var cc = $('cards'); $('slideNav').hidden = cc.scrollWidth <= cc.clientWidth + 2;
   }
 
   /* ---------- map ---------- */
@@ -667,6 +675,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
       var tk = window.prompt('Paste a GitHub fine-grained token with Contents: Read and write on ' + GH.repo + '. It is stored only in this browser.', '');
       if (tk && tk.trim()) { try { localStorage.setItem(GH.key, tk.trim()); } catch (er) {} setPub('', false); state.pub = ''; statusText(); publishRoster(); }
     }
+    else if (a === 'slide') { var c = $('cards'); c.scrollBy({ left: c.clientWidth * 0.8 * Number(el.dataset.dir), behavior: 'smooth' }); }
     else if (a === 'rmphoto') { formPhoto = ''; renderPhoto(); }
     else if (a === 'close') closeOverlay();
     else if (a === 'filter') { state.lead = el.dataset.fn; renderChips(); renderCards(); }
@@ -712,6 +721,7 @@ form.fform { display: flex; flex-direction: column; gap: 14px; }
   if (window.matchMedia) { var mq = window.matchMedia('(prefers-color-scheme: light)'); if (mq.addEventListener) mq.addEventListener('change', syncThemeBtn); }
   syncThemeBtn();
 
+  window.addEventListener('resize', function () { var cc = $('cards'); $('slideNav').hidden = cc.scrollWidth <= cc.clientWidth + 2; });
   renderBand();
   boot();
 })();
